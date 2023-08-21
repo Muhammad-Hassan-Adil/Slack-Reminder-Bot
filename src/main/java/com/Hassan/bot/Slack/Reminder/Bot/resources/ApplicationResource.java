@@ -1,17 +1,14 @@
 package com.Hassan.bot.Slack.Reminder.Bot.resources;
+
 import com.Hassan.bot.Slack.Reminder.Bot.domain.Message;
 import com.Hassan.bot.Slack.Reminder.Bot.services.SlackMsgSenderThreaderService;
 import org.springframework.beans.factory.annotation.*;
-import org.springframework.format.annotation.DateTimeFormat;
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.http.*;
+import org.springframework.http.MediaType;
+import java.time.format.DateTimeFormatter;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.client.RestTemplate;
-
-import java.time.Duration;
-import java.time.LocalDateTime;
+import java.time.*;
 import java.util.List;
-
+import java.util.Map;
 
 @RestController
 public class ApplicationResource {
@@ -20,20 +17,23 @@ public class ApplicationResource {
     @Autowired
     private MessageRepoResource MessageRepoResource;
 
-    @PostMapping("/send-private-message")
-    public String sendPrivateMessage(@RequestParam String slackUser, String message, @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm") LocalDateTime reminderTime) {
+    @PostMapping(path = "/send-private-message", consumes = MediaType.APPLICATION_JSON_VALUE)
+    public void sendPrivateMessage(@RequestBody Map<String, String> requestData) {
+        String slackUser = requestData.get("slackUser");
+        String message = requestData.get("message");
+        String reminderTimeString = requestData.get("reminderTime");
+        LocalDateTime reminderTime = LocalDateTime.parse(reminderTimeString, DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm"));
         LocalDateTime reminderTimeWithSeconds = reminderTime.withSecond(0);
         String payload = String.format("{\"channel\": \"%s\", \"text\": \"%s\", \"datetime\": \"%s\"}", slackUser, message, reminderTimeWithSeconds);
-        Message message1 = new Message(message, slackUser, reminderTimeWithSeconds);
         LocalDateTime now = LocalDateTime.now();
         Duration duration = Duration.between(now, reminderTimeWithSeconds);
         long seconds = duration.getSeconds();
+        Message message1 = new Message(message, slackUser, reminderTime.format(DateTimeFormatter.ofPattern("yyyy-MM-dd")), reminderTime.format(DateTimeFormatter.ofPattern("HH:mm")));
         MessageRepoResource.save(message1);
-        SlackMsgSenderThreaderService slackMsgSenderThreaderService = new SlackMsgSenderThreaderService(payload, seconds * 1000, webhookUrl);
+        SlackMsgSenderThreaderService slackMsgSenderThreaderService = new SlackMsgSenderThreaderService(payload, seconds * 1000, webhookUrl, message1, MessageRepoResource);
         slackMsgSenderThreaderService.start();
-        MessageRepoResource.delete(message1);
-        return "Message saved";
     }
+
     @GetMapping("/get-all-messages")
     public String getAllMessages() {
         return MessageRepoResource.findAll().toString();
@@ -41,6 +41,6 @@ public class ApplicationResource {
 
     @GetMapping("/get-message-by-userid")
     public List<Message> getMessageByUserId(@RequestParam String slackUser) {
-        return MessageRepoResource.findBySlack_user_id(slackUser);
+        return MessageRepoResource.findByslack_user_id(slackUser);
     }
 }
