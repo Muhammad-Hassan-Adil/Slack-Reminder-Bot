@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="">
+<head>
+  <title>Message Data</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f2f2f2;
+      margin: 20px;
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      margin-bottom: 20px;
+      border: 1px solid #ddd;
+    }
+
+    th, td {
+      padding: 8px;
+      text-align: left;
+      border-bottom: 1px solid #ddd;
+    }
+
+    th {
+      background-color: #f2f2f2;
+    }
+
+    .button-container {
+      display: flex;
+      justify-content: center;
+      margin-top: 10px;
+    }
+
+    #backButton, #refreshButton {
+      padding: 8px 16px;
+      background-color: #4CAF50;
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      margin-right: 10px;
+    }
+
+    #backButton:hover, #refreshButton:hover {
+      background-color: #45a049;
+    }
+
+    #messageTableBody tr:nth-child(even) {
+      background-color: #f2f2f2;
+    }
+    .delete-button {
+      padding: 6px 12px;
+      background-color: #d71c14;
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+
+    .delete-button:hover {
+      background-color: #940704;
+    }
+  </style>
+</head>
+<body>
+<h1>Message Data</h1>
+<table id="messageTable">
+  <thead>
+  <tr>
+    <th>ID</th>
+    <th>Message</th>
+    <th>Slack Handle</th>
+    <th>Date</th>
+    <th>Time</th>
+    <th>Action</th>
+  </tr>
+  </thead>
+  <tbody id="messageTableBody"></tbody>
+</table>
+<div class="button-container">
+<button id="backButton">Back</button>
+<button id="refreshButton">Refresh</button>
+</div>
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    const messageTableBody = document.getElementById('messageTableBody');
+    const backButton = document.getElementById('backButton');
+    const refreshButton = document.getElementById('refreshButton');
+    let data = JSON.parse(localStorage.getItem('messagesData'));
+
+    function renderMessages() {
+      messageTableBody.innerHTML = data.map(message => {
+        return `
+          <tr>
+            <td>${message.id}</td>
+            <td>${message.text}</td>
+            <td>${message.slack_user_id}</td>
+            <td>${message.date}</td>
+            <td>${message.time}</td>
+            <td><button class="delete-button" data-id="${message.id}">Delete</button></td>
+          </tr>`;
+      }).join('');
+
+      const deleteButtons = document.querySelectorAll('.delete-button');
+      deleteButtons.forEach(button => {
+        button.addEventListener('click', deleteMessage);
+      });
+    }
+
+    if (Array.isArray(data)) {
+      renderMessages();
+    }
+
+    backButton.addEventListener('click', function () {
+      window.location.href = 'page2.html';
+    });
+
+    refreshButton.addEventListener('click', function () {
+      fetch('/get-all-messages')
+              .then(response => response.json())
+              .then(newData => {
+                localStorage.setItem('messagesData', JSON.stringify(newData));
+                data = newData;
+                renderMessages();
+              })
+              .catch(error => {
+                console.error('Error refreshing messages:', error);
+              });
+    });
+
+    function deleteMessage(event) {
+      const messageId = event.target.getAttribute('data-id');
+      fetch('/delete-message', {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ id: messageId })
+      })
+              .then(response => {
+                if (response.ok) {
+                  console.log('Message deleted successfully.');
+                  // Refresh the messages after deletion
+                  refreshButton.click();
+                } else {
+                  console.error('Failed to delete message.');
+                }
+              })
+              .catch(error => {
+                console.error('Error deleting message:', error);
+              });
+    }
+  });
+</script>
+</body>
+</html>

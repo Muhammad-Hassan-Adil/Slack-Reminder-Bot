@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="">
+<head>
+  <title>Message Data</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f2f2f2;
+      margin: 0;
+      padding: 0;
+    }
+
+    .container {
+      text-align: center;
+      margin: 20px auto;
+      max-width: 800px;
+      padding: 20px;
+      background-color: #fff;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+
+    h2 {
+      margin-top: 0;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 8px;
+    }
+
+    input[type="text"], input[type="datetime-local"] {
+      width: 100%;
+      padding: 8px;
+      margin-bottom: 16px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+    }
+
+    .fancy-button {
+      background-color: #2956b4;
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+      padding: 10px 20px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+
+    .fancy-button:hover {
+      background-color: #12347e;
+    }
+
+    pre {
+      white-space: pre-wrap;
+      word-wrap: break-word;
+      max-height: 300px;
+      overflow-y: auto;
+      border: 1px solid #ddd;
+      padding: 10px;
+      background-color: #fff;
+    }
+  </style>
+</head>
+<body>
+<div class="container" id="mainContent">
+  <form id="send-message-form">
+    <h2>Send Private Message</h2>
+    <label for="message">Message:</label>
+    <input type="text" id="message" name="message" required><br>
+    <label for="reminderTime">Reminder Time:</label>
+    <input type="datetime-local" id="reminderTime" name="reminderTime" required><br>
+    <button class="fancy-button" type="submit">Send Message</button>
+  </form>
+  <h2>Messages:</h2>
+  <pre id="messagesOutput"></pre>
+  <form id="get-all-messages-form">
+    <h2>Get All Messages</h2>
+    <button class="fancy-button" type="submit" id="getAllMessagesButton">Get All Messages</button>
+  </form>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    const sendMessageForm = document.getElementById('send-message-form');
+    sendMessageForm.addEventListener('submit', sendPrivateMessage);
+    const getAllMessagesForm = document.getElementById('get-all-messages-form');
+    getAllMessagesForm.addEventListener('submit', getAllMessages);
+
+    function sendPrivateMessage(event) {
+      event.preventDefault();
+      const message = document.getElementById('message').value;
+      const reminderTime = document.getElementById('reminderTime').value;
+      const slackUser = localStorage.getItem('slackHandle'); // Retrieve Slack user from localStorage
+      const data = {
+        slackUser: slackUser,
+        message: message,
+        reminderTime: reminderTime
+      };
+      fetch('/send-private-message', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(data)
+      })
+              .then(response => {
+                if (response.ok) {
+                  console.log('Message sent successfully.');
+                } else {
+                  console.error('Failed to send message.');
+                }
+              })
+              .catch(error => {
+                console.error('Error sending message:', error);
+              });
+    }
+
+    function getAllMessages(event) {
+      event.preventDefault();
+      fetch('/get-all-messages')
+              .then(response => response.json())
+              .then(data => {
+                if (Array.isArray(data)) {
+                  console.log(data);
+                  localStorage.setItem('messagesData', JSON.stringify(data));
+                  window.location.href = 'messages.html';
+                } else {
+                  let messagesOutput = document.getElementById('messagesOutput');
+                  messagesOutput.textContent = 'No messages found.';
+                }
+              })
+              .catch(error => {
+                console.error('Error getting messages:', error);
+              });
+    }
+  });
+</script>
+</body>
+</html>

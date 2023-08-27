@@ -9,9 +9,11 @@ import org.springframework.web.bind.annotation.*;
 import java.time.*;
 import java.util.List;
 import java.util.Map;
+import org.apache.logging.log4j.*;
 
 @RestController
 public class ApplicationResource {
+    private static final Logger logger = LogManager.getLogger(ApplicationResource.class.getName());
     @Value("${webhook.url}")
     private String webhookUrl;
     @Autowired
@@ -32,15 +34,20 @@ public class ApplicationResource {
         MessageRepoResource.save(message1);
         SlackMsgSenderThreaderService slackMsgSenderThreaderService = new SlackMsgSenderThreaderService(payload, seconds * 1000, webhookUrl, message1, MessageRepoResource);
         slackMsgSenderThreaderService.start();
+        logger.info("Message Sent to threader service");
     }
 
     @GetMapping("/get-all-messages")
-    public String getAllMessages() {
-        return MessageRepoResource.findAll().toString();
+    public List<Message> getAllMessages() {
+        List<Message> messages = MessageRepoResource.findAll();
+        logger.info("All Messages Retrieved");
+        return messages;
     }
-
-    @GetMapping("/get-message-by-userid")
-    public List<Message> getMessageByUserId(@RequestParam String slackUser) {
-        return MessageRepoResource.findByslack_user_id(slackUser);
+    @DeleteMapping("/delete-message")
+    public void deleteMessage(@RequestBody Map<String, String> requestData) {
+        String idS = requestData.get("id");
+        int id = Integer.parseInt(idS);
+        MessageRepoResource.deleteById(id);
+        logger.info("Message Deleted");
     }
 }

@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="INFO">
+
+    <Appenders><Console name="Console" target="SYSTEM_OUT">
+            <PatternLayout pattern="%d{yyyy-MM-dd HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n"/>
+        </Console>
+        <RollingFile name="LogFile" fileName="/Users/hassan/Desktop/Projects/Slack-Reminder-Bot/src/main/java/com/Hassan/bot/Slack/Reminder/Bot/logs/application.log"
+                     filePattern="/Users/hassan/Desktop/Projects/Slack-Reminder-Bot/src/main/java/com/Hassan/bot/Slack/Reminder/Bot/logs/application-%d{yyyy-MM-dd-HH-mm-ss}.log">
+            <PatternLayout pattern="%d{yyyy-MM-dd HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n"/>
+            <Policies>
+                <OnStartupTriggeringPolicy/>
+            </Policies>
+            <DefaultRolloverStrategy/>
+        </RollingFile>
+    </Appenders>
+
+    <Loggers>
+        <Root level="info">
+            <AppenderRef ref="Console"/>
+            <AppenderRef ref="LogFile"/>
+        </Root>
+    </Loggers>
+
+</Configuration>

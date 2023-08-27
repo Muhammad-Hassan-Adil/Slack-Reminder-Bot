@@ -1,25 +1,28 @@
 <!DOCTYPE html>
-<html>
+<html lang="">
 <head>
   <title>Slack Reminder Bot</title>
   <style>
     body {
       font-family: Arial, sans-serif;
       background-color: #f2f2f2;
-      margin: 20px;
+      margin: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+
+    .welcome-form {
+      background-color: #fff;
+      padding: 20px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      text-align: center;
+      border-radius: 8px;
     }
 
     h1, h2 {
-      text-align: center;
-    }
-
-    form {
-      margin: 20px auto;
-      max-width: 400px;
-      padding: 20px;
-      background-color: #fff;
-      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-      text-align: center;
+      margin-bottom: 10px;
     }
 
     label {
@@ -27,155 +30,53 @@
       margin-bottom: 8px;
     }
 
-    input[type="text"], input[type="datetime-local"] {
-      width: 95%;
+    input[type="text"] {
+      width: 100%;
       padding: 8px;
-      margin-bottom: 16px;
+      margin-bottom: 10px;
       border: 1px solid #ddd;
       border-radius: 4px;
     }
 
-    button[type="submit"] {
-      padding: 8px 16px;
-      background-color: #4CAF50;
+    .fancy-button {
+      background-color: #2956b4;
       color: #fff;
       border: none;
       border-radius: 4px;
+      padding: 10px 20px;
       cursor: pointer;
-      display: block;
-      margin: 0 auto;
+      font-size: 16px;
     }
 
-    button[type="submit"]:hover {
-      background-color: #45a049;
-    }
-
-    pre {
-      white-space: pre-wrap;
-      word-wrap: break-word;
+    .fancy-button:hover {
+      background-color: #12347e;
     }
   </style>
 
 </head>
 <body>
-<h1>Slack Reminder Bot</h1>
-
-<form id="send-message-form">
-  <h2>Send Private Message</h2>
-  <label for="slackUser">Slack User:</label>
-  <input type="text" id="slackUser" name="slackUser" required><br>
-  <label for="message">Message:</label>
-  <input type="text" id="message" name="message" required><br>
-  <label for="reminderTime">Reminder Time:</label>
-  <input type="datetime-local" id="reminderTime" name="reminderTime" required><br>
-  <button type="submit">Send Message</button>
-</form>
-
-<form id="get-messages-form">
-  <h2>Get Messages by User ID</h2>
-  <label for="getUserID">User ID:</label>
-  <input type="text" id="getUserID" name="getUserID" required><br>
-  <button type="submit" id="getMessageButton">Get Messages</button>
-</form>
-
-<h2>Messages:</h2>
-<pre id="messagesOutput"></pre>
-<form id="get-all-messages-form">
-  <h2>Get All Messages</h2>
-  <button type="submit" id="getAllMessagesButton">Get All Messages</button>
-</form>
+<div class="container">
+  <h1>Welcome to Slack Reminder Bot!</h1>
+  <div class="welcome-form">
+    <h2>Let's Get Started</h2>
+    <label for="slackHandle">Enter Your Slack Handle:</label>
+    <input type="text" id="slackHandle" name="slackHandle" required><br>
+    <button class="fancy-button" id="startButton">Start</button>
+  </div>
+</div>
 
 <script>
   document.addEventListener('DOMContentLoaded', function () {
-    const sendMessageForm = document.getElementById('send-message-form');
-    const getMessageForm = document.getElementById('get-messages-form');
-    const getAllMessagesForm = document.getElementById('get-all-messages-form');
-    const messagesOutput = document.getElementById('messagesOutput');
-    sendMessageForm.addEventListener('submit', sendPrivateMessage);
-    getMessageForm.addEventListener('submit', getMessagesByUserId);
-    getAllMessagesForm.addEventListener('submit', getAllMessages);
+    const startButton = document.getElementById('startButton');
 
-    function sendPrivateMessage(event) {
-      console.log('sendPrivateMessage');
-      event.preventDefault();
-      const slackUser = document.getElementById('slackUser').value;
-      const message = document.getElementById('message').value;
-      const reminderTime = document.getElementById('reminderTime').value;
-      console.log(`slackUser: ${slackUser}`);
-      console.log(`message: ${message}`);
-      console.log(`reminderTime: ${reminderTime}`);
-      const data = {
-        slackUser: slackUser,
-        message: message,
-        reminderTime: reminderTime
-      };
-      console.log(data);
-      fetch('/send-private-message', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(data)
-      })
-              .then(response => {
-                if (response.ok) {
-                  console.log('Message sent successfully.');
-                } else {
-                  console.error('Failed to send message.');
-                }
-              })
-              .catch(error => {
-                console.error('Error sending message:', error);
-              });
-    }
-
-    function getMessagesByUserId(event) {
-      console.log('getMessagesByUserId');
-      event.preventDefault();
-      const userId = document.getElementById('getUserID').value;
-      fetch(`/get-message-by-userid?slackUser=${userId}`)
-              .then(response => response.json())
-              .then(data => {
-                if (Array.isArray(data)) {
-                  console.log(data);
-                  messagesOutput.textContent = data.map(message => {
-                    const date = new Date(message.date);
-                    const time = message.time;
-                    const formattedDate = date.toLocaleDateString();
-                    return `${message.text} - ${message.slack_user_id} - Date: ${formattedDate}, Time: ${time}`;
-                  }).join('\n');
-                } else {
-                  messagesOutput.textContent = 'No messages found for the given user.';
-                }
-              })
-              .catch(error => {
-                console.error('Error getting messages:', error);
-              });
-    }
-
-    function getAllMessages(event) {
-      console.log('getAllMessages');
-      event.preventDefault();
-      fetch('/get-all-messages')
-              .then(response => response.json())
-              .then(data => {
-                if (Array.isArray(data)) {
-                  messagesOutput.textContent = data.map(message => {
-                    const parsedDatetime = new Date(message.date);
-                    const date = parsedDatetime.toLocaleDateString();
-                    const time = message.time;
-                    return `ID: ${message.ID} - Message: ${message.text} - Slack Handle: ${message.slack_user_id} - Date: ${date} - Time: ${time}`;
-                  }).join('\n');
-                } else {
-                  messagesOutput.textContent = 'No messages found.';
-                }
-              })
-              .catch(error => {
-                console.error('Error getting messages:', error);
-              });
-    }
-  });
-
+    startButton.addEventListener('click', function () {
+      const slackHandle = document.getElementById('slackHandle').value;
+      if (slackHandle) {
+        localStorage.setItem('slackHandle', slackHandle);
+        window.location.href = 'page2.html';
+      }
+    });
+    });
 </script>
 </body>
 </html>
