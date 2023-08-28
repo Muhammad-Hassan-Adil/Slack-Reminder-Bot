@@ -24,6 +24,10 @@ public class ApplicationResource {
         String slackUser = requestData.get("slackUser");
         String message = requestData.get("message");
         String reminderTimeString = requestData.get("reminderTime");
+        String webhookurl = requestData.get("webhookUrl");
+        if (webhookurl != null) {
+            webhookUrl = webhookurl;
+        }
         LocalDateTime reminderTime = LocalDateTime.parse(reminderTimeString, DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm"));
         LocalDateTime reminderTimeWithSeconds = reminderTime.withSecond(0);
         String payload = String.format("{\"channel\": \"%s\", \"text\": \"%s\", \"datetime\": \"%s\"}", slackUser, message, reminderTimeWithSeconds);

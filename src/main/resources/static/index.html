@@ -4,8 +4,9 @@
   <title>Slack Reminder Bot</title>
   <style>
     body {
-      font-family: Arial, sans-serif;
-      background-color: #f2f2f2;
+      font-family: 'Roboto', Arial, sans-serif;
+      background: url('logo.jpg') no-repeat center center fixed;
+      background-size: cover;
       margin: 0;
       display: flex;
       justify-content: center;
@@ -13,28 +14,36 @@
       height: 100vh;
     }
 
-    .welcome-form {
-      background-color: #fff;
-      padding: 20px;
-      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    .container {
       text-align: center;
+      color: #fff;
+      padding: 20px;
+    }
+
+    .welcome-form {
+      background-color: rgba(0, 0, 0, 0.7);
+      padding: 40px;
+      box-shadow: 0 0 20px rgba(0, 0, 0, 0.4);
       border-radius: 8px;
     }
 
     h1, h2 {
-      margin-bottom: 10px;
+      margin-bottom: 20px;
+      font-weight: 700;
     }
 
     label {
       display: block;
-      margin-bottom: 8px;
+      margin-bottom: 10px;
+      color: #fff;
+      font-weight: 500;
     }
 
     input[type="text"] {
       width: 100%;
-      padding: 8px;
-      margin-bottom: 10px;
-      border: 1px solid #ddd;
+      padding: 12px;
+      margin-bottom: 20px;
+      border: 1px solid #ccc;
       border-radius: 4px;
     }
 
@@ -43,14 +52,48 @@
       color: #fff;
       border: none;
       border-radius: 4px;
-      padding: 10px 20px;
+      padding: 12px 24px;
       cursor: pointer;
-      font-size: 16px;
+      font-size: 18px;
+      font-weight: 600;
+      transition: background-color 0.3s;
     }
 
     .fancy-button:hover {
       background-color: #12347e;
     }
+
+    .container h1 {
+      font-size: 42px;
+    }
+
+    .container h2 {
+      font-size: 32px;
+    }
+
+    #wrapper {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+    }
+
+    #wrapper::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.7);
+    }
+
+    .container {
+      position: relative;
+      z-index: 1;
+    }
+
+
   </style>
 
 </head>
@@ -61,6 +104,8 @@
     <h2>Let's Get Started</h2>
     <label for="slackHandle">Enter Your Slack Handle:</label>
     <input type="text" id="slackHandle" name="slackHandle" required><br>
+    <label for="webhookurl">Enter Your Webhook URL:</label>
+    <input type="text" id="webhookurl" name="webhookurl" required><br>
     <button class="fancy-button" id="startButton">Start</button>
   </div>
 </div>
@@ -73,6 +118,7 @@
       const slackHandle = document.getElementById('slackHandle').value;
       if (slackHandle) {
         localStorage.setItem('slackHandle', slackHandle);
+        localStorage.setItem('webhookurl', document.getElementById('webhookurl').value);
         window.location.href = 'page2.html';
       }
     });

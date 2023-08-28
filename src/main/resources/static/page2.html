@@ -4,35 +4,49 @@
   <title>Message Data</title>
   <style>
     body {
-      font-family: Arial, sans-serif;
-      background-color: #f2f2f2;
+      font-family: 'Roboto', Arial, sans-serif;
+      background: url('logo2.jpg') no-repeat center center fixed;
+      background-size: cover;
       margin: 0;
       padding: 0;
     }
 
     .container {
       text-align: center;
-      margin: 20px auto;
+      margin: 50px auto;
       max-width: 800px;
-      padding: 20px;
-      background-color: #fff;
-      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      padding: 40px;
+      background-color: rgba(0, 0, 0, 0.7);
+      box-shadow: 0 0 20px rgba(0, 0, 0, 0.4);
+      border-radius: 8px;
+      color: #fff;
     }
 
     h2 {
       margin-top: 0;
+      font-weight: 700;
+      font-size: 28px;
+      margin-bottom: 20px;
+    }
+    h1 {
+      margin-top: 45px;
+      font-weight: 700;
+      font-size: 28px;
     }
 
     label {
       display: block;
       margin-bottom: 8px;
+      color: #fff;
+      font-weight: 500;
     }
 
-    input[type="text"], input[type="datetime-local"] {
+    input[type="text"],
+    input[type="datetime-local"] {
       width: 100%;
-      padding: 8px;
+      padding: 12px;
       margin-bottom: 16px;
-      border: 1px solid #ddd;
+      border: 1px solid #ccc;
       border-radius: 4px;
     }
 
@@ -41,23 +55,50 @@
       color: #fff;
       border: none;
       border-radius: 4px;
-      padding: 10px 20px;
+      padding: 12px 24px;
       cursor: pointer;
-      font-size: 16px;
+      font-size: 18px;
+      font-weight: 600;
+      transition: background-color 0.3s;
+
     }
 
     .fancy-button:hover {
       background-color: #12347e;
     }
 
-    pre {
-      white-space: pre-wrap;
-      word-wrap: break-word;
-      max-height: 300px;
-      overflow-y: auto;
-      border: 1px solid #ddd;
-      padding: 10px;
-      background-color: #fff;
+    #wrapper {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+    }
+
+    #wrapper::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.7);
+    }
+
+    .container {
+      position: relative;
+      z-index: 1;
+    }
+    #backButton{
+      background-color: #2956b4;
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+      padding: 12px 24px;
+      cursor: pointer;
+      text-align: left;
+      font-weight: 500;
+      transition: background-color 0.3s;
+      display: flex;
     }
   </style>
 </head>
@@ -71,30 +112,31 @@
     <input type="datetime-local" id="reminderTime" name="reminderTime" required><br>
     <button class="fancy-button" type="submit">Send Message</button>
   </form>
-  <h2>Messages:</h2>
-  <pre id="messagesOutput"></pre>
   <form id="get-all-messages-form">
-    <h2>Get All Messages</h2>
+    <h1>Get All Messages</h1>
     <button class="fancy-button" type="submit" id="getAllMessagesButton">Get All Messages</button>
   </form>
+  <button id="backButton">Back</button>
 </div>
-
 <script>
   document.addEventListener('DOMContentLoaded', function () {
     const sendMessageForm = document.getElementById('send-message-form');
     sendMessageForm.addEventListener('submit', sendPrivateMessage);
     const getAllMessagesForm = document.getElementById('get-all-messages-form');
     getAllMessagesForm.addEventListener('submit', getAllMessages);
+    const backButton = document.getElementById('backButton');
 
     function sendPrivateMessage(event) {
       event.preventDefault();
       const message = document.getElementById('message').value;
       const reminderTime = document.getElementById('reminderTime').value;
-      const slackUser = localStorage.getItem('slackHandle'); // Retrieve Slack user from localStorage
+      const slackUser = localStorage.getItem('slackHandle');
+      const webhookUrl = localStorage.getItem('webhookUrl');
       const data = {
         slackUser: slackUser,
         message: message,
-        reminderTime: reminderTime
+        reminderTime: reminderTime,
+        webhookUrl: webhookUrl
       };
       fetch('/send-private-message', {
         method: 'POST',
@@ -133,6 +175,10 @@
                 console.error('Error getting messages:', error);
               });
     }
+
+    backButton.addEventListener('click', function () {
+      window.location.href = 'index.html';
+    });
   });
 </script>
 </body>
